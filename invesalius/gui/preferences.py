@@ -97,6 +97,14 @@ class Preferences(wx.Dialog):
 
     def __bind_events(self):
         Publisher.subscribe(self.LoadPreferences, "Load Preferences")
+        # External controller (attached via --remote-host): allow it to
+        # trigger the robot reconnection routine.
+        import invesalius.session as ses
+
+        if ses.Session().GetConfig("external_controller"):
+            Publisher.subscribe(
+                self.tracker_tab.OnRobotConnect, "Robot Recovery: Restart Robot Connection"
+            )
 
     def OnOK(self, event):
         Publisher.sendMessage("Save Preferences")
@@ -2031,6 +2039,12 @@ class RobotSetupPanel(wx.Panel):
         Publisher.subscribe(
             self.OnSetRobotTransformationMatrix, "Robot transformation matrix seted"
         )
+        # External controller (attached via --remote-host): allow it to
+        # trigger the robot reconnection routine.
+        import invesalius.session as ses
+
+        if ses.Session().GetConfig("external_controller"):
+            Publisher.subscribe(self.OnRobotConnect, "Robot Recovery: Restart Robot Connection")
 
     def HideParent(self):  # hide preferences dialog box
         self.GetGrandParent().GetGrandParent().Hide()
