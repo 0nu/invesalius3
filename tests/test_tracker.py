@@ -113,6 +113,18 @@ def test_set_tracker(mocker, tracker):
         tracker.SetTracker(tracker_id=const.DEBUGTRACKAPPROACH)
 
 
+def test_disconnect_failure_clears_connection_state(capsys):
+    connection = tc.TrackerConnection()
+    connection.connection = MagicMock()
+    connection.connection.Close.side_effect = RuntimeError("camera offline")
+
+    connection.Disconnect()
+
+    assert connection.connection is None
+    assert connection.lib_mode == "error"
+    assert "camera offline" in capsys.readouterr().out
+
+
 def test_get_tracker_id(tracker):
     tracker.tracker_id = const.DEBUGTRACKAPPROACH
     assert tracker.GetTrackerId() == const.DEBUGTRACKAPPROACH

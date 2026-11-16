@@ -49,10 +49,11 @@ class TrackerConnection:
             self.connection = False
             self.lib_mode = "wrapper"
             print("Tracker disconnected.")
-        except Exception:
-            self.connection = True
+        except Exception as exc:
+            # A failed close must not report the tracker as still connected.
+            self.connection = None
             self.lib_mode = "error"
-            print("The tracker could not be disconnected.")
+            print(f"The tracker could not be disconnected: {exc}")
 
     def IsConnected(self):
         # TODO: It would be cleaner to compare self.connection to None here; however, currently it can also have
@@ -509,15 +510,15 @@ class PolarisTrackerConnection(TrackerConnection):
 
             if connection.Initialize(com_port, probe_dir, ref_dir, obj_dirs) != 0:
                 lib_mode = None
-                print("Could not connect to polaris tracker.")
+                print("Could not connect to polaris tracker (Initialize returned non-zero).")
             else:
                 print("Connected to polaris tracking device.")
                 self.connection = connection
 
-        except Exception:
+        except Exception as exc:
             lib_mode = "error"
             connection = None
-            print("Could not connect to polaris tracker.")
+            print(f"Could not connect to polaris tracker: {exc}")
 
         self.lib_mode = lib_mode
 
